@@ -1,0 +1,227 @@
+/* Flatpickr visual-parity shim - re-themes Flatpickr's own classes to match
+   the color/spacing language the old bootstrap-datetimepicker widget used
+   to inherit from this project's .dropdown-menu + a handful of style.css
+   overrides. Do not edit style.css/SCSS for this - this file is additive.
+
+   Every selector below that mirrors one of Flatpickr's own base-CSS
+   selectors is prefixed with `html` solely to win the specificity tie -
+   across the site's pages this stylesheet's <link> is ordered *before*
+   assets/plugins/flatpickr/flatpickr.min.css, so on an exact-specificity
+   tie the base library (loaded after) was silently winning the cascade
+   and this file's sizing/color overrides were being ignored - most
+   visibly on .flatpickr-day, whose base 14.2857%-width/39px-max-width
+   was clobbering the 7-column grid below, squashing every day cell down
+   to a sliver and making adjacent days' numbers visually overlap. */
+
+html .flatpickr-calendar {
+	border: 1px solid #E9EDF4;
+	border-radius: var(--bs-border-radius, 0.5rem);
+	box-shadow: 0px 4px 13px -2px rgba(19, 16, 34, 0.06);
+	font-size: 0.875rem;
+}
+html .flatpickr-months {
+	padding-bottom: 16px;
+}
+html .flatpickr-current-month {
+	font-size: 15px;
+	font-weight: 500;
+	color: #202C4B;
+}
+html .flatpickr-current-month input.cur-year,
+html .flatpickr-current-month .flatpickr-monthDropdown-months {
+	color: #202C4B;
+	font-weight: 500;
+}
+html .flatpickr-weekdays {
+	height: 40px;
+}
+html span.flatpickr-weekday {
+	font-size: 15px;
+	font-weight: 500;
+	color: #202C4B;
+	height: 40px;
+	line-height: 40px;
+}
+html .flatpickr-calendar .flatpickr-months .flatpickr-prev-month,
+html .flatpickr-calendar .flatpickr-months .flatpickr-next-month {
+	width: 24px;
+	height: 24px;
+	padding: 0;
+	border: 1px solid #E9EDF4;
+	border-radius: 50%;
+	display: inline-flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 12px;
+	top: 8px;
+}
+html .flatpickr-calendar .flatpickr-months .flatpickr-prev-month:hover,
+html .flatpickr-calendar .flatpickr-months .flatpickr-next-month:hover {
+	background: #202C4B;
+	border-color: #202C4B;
+}
+html .flatpickr-calendar .flatpickr-months .flatpickr-prev-month:hover svg,
+html .flatpickr-calendar .flatpickr-months .flatpickr-next-month:hover svg {
+	fill: #FFF;
+}
+/* Force a true 7-column grid for the day cells. Flatpickr's own CSS lays
+   .dayContainer out with flexbox + flex-wrap, relying on each day's
+   flex-basis (14.2857%) to force a wrap every 7 cells - but our max-width:30px
+   below (day cells are visually much narrower than 1/7 of the calendar) lets
+   far more than 7 of those narrowed cells fit per line, so on calendars whose
+   width flatpickr measured while their container was still hidden (a closed
+   dropdown/tab/modal that hadn't been shown yet when flatpickr initialized),
+   the grid silently wraps at the wrong column count and the extra row(s)
+   spill out past the calendar's card. Grid isn't width-dependent this way -
+   it always keeps exactly 7 columns regardless of any stale internal
+   measurement. */
+html .flatpickr-calendar .dayContainer {
+	display: grid;
+	grid-template-columns: repeat(7, 1fr);
+}
+html .flatpickr-day {
+	font-size: 15px;
+	color: #515B73;
+	width: 100%;
+	max-width: 30px;
+	height: 32px;
+	line-height: 32px;
+	justify-self: center;
+}
+html .flatpickr-day.selected,
+html .flatpickr-day.selected:hover,
+html .flatpickr-day.startRange,
+html .flatpickr-day.endRange,
+html .flatpickr-day.selected.inRange {
+	background: #3D5EE1;
+	border-color: #3D5EE1;
+	color: #FFF;
+}
+html .flatpickr-day.today {
+	border-color: #3D5EE1;
+}
+html .flatpickr-day.inRange {
+	background: rgba(61, 94, 225, 0.1);
+	border-color: transparent;
+	box-shadow: -5px 0 0 rgba(61, 94, 225, 0.1), 5px 0 0 rgba(61, 94, 225, 0.1);
+}
+
+/* Dark mode - the calendar popup never picked up the app's dark surface
+   colors, so span.flatpickr-weekday/.flatpickr-current-month below were
+   rendering light-gray text on a calendar that was still hard-coded white
+   (flatpickr's own base CSS sets background:#fff and never checks the
+   theme), which read as barely-visible text on a white card sitting in an
+   otherwise dark UI. This darkens the calendar surface itself plus every
+   element whose color was hard-coded against a light background. */
+html[data-theme=dark] .flatpickr-calendar {
+	background: #131022;
+	border-color: #1B1632;
+	box-shadow: 0px 4px 13px -2px rgba(0, 0, 0, 0.35);
+}
+html[data-theme=dark] .flatpickr-calendar.arrowTop:before {
+	border-bottom-color: #1B1632;
+}
+html[data-theme=dark] .flatpickr-calendar.arrowTop:after {
+	border-bottom-color: #131022;
+}
+html[data-theme=dark] .flatpickr-calendar.arrowBottom:before {
+	border-top-color: #1B1632;
+}
+html[data-theme=dark] .flatpickr-calendar.arrowBottom:after {
+	border-top-color: #131022;
+}
+html[data-theme=dark] .flatpickr-months .flatpickr-month,
+html[data-theme=dark] .flatpickr-months .flatpickr-prev-month,
+html[data-theme=dark] .flatpickr-months .flatpickr-next-month {
+	color: #B9B7C0;
+	fill: #B9B7C0;
+}
+html[data-theme=dark] .flatpickr-calendar .flatpickr-months .flatpickr-prev-month,
+html[data-theme=dark] .flatpickr-calendar .flatpickr-months .flatpickr-next-month {
+	border-color: #1B1632;
+}
+html[data-theme=dark] .flatpickr-current-month,
+html[data-theme=dark] .flatpickr-current-month input.cur-year,
+html[data-theme=dark] .flatpickr-current-month .flatpickr-monthDropdown-months,
+html[data-theme=dark] span.flatpickr-weekday {
+	color: #B9B7C0;
+}
+html[data-theme=dark] .flatpickr-current-month .flatpickr-monthDropdown-months .flatpickr-monthDropdown-month {
+	background-color: #131022;
+}
+html[data-theme=dark] .flatpickr-day {
+	color: #B9B7C0;
+}
+html[data-theme=dark] .flatpickr-day:hover,
+html[data-theme=dark] .flatpickr-day:focus,
+html[data-theme=dark] .flatpickr-day.prevMonthDay:hover,
+html[data-theme=dark] .flatpickr-day.nextMonthDay:hover {
+	background: #1B1632;
+	border-color: #1B1632;
+}
+html[data-theme=dark] .flatpickr-day.flatpickr-disabled,
+html[data-theme=dark] .flatpickr-day.flatpickr-disabled:hover,
+html[data-theme=dark] .flatpickr-day.prevMonthDay,
+html[data-theme=dark] .flatpickr-day.nextMonthDay,
+html[data-theme=dark] .flatpickr-day.notAllowed {
+	color: rgba(185, 183, 192, 0.3);
+}
+html[data-theme=dark] .flatpickr-calendar.hasTime .flatpickr-time {
+	border-top-color: #1B1632;
+}
+html[data-theme=dark] .flatpickr-time input,
+html[data-theme=dark] .flatpickr-time .flatpickr-time-separator,
+html[data-theme=dark] .flatpickr-time .flatpickr-am-pm {
+	color: #B9B7C0;
+}
+html[data-theme=dark] .flatpickr-time input:hover,
+html[data-theme=dark] .flatpickr-time .flatpickr-am-pm:hover,
+html[data-theme=dark] .flatpickr-time input:focus,
+html[data-theme=dark] .flatpickr-time .flatpickr-am-pm:focus {
+	background: #1B1632;
+}
+
+/* Calendar/clock icon affordance on flatpickr-bound date and time fields. A
+   background-image is used (not ::after - <input> doesn't render generated
+   content) so it works on bare inputs and on the older manually-wrapped
+   .input-icon/.input-icon-end markup alike; where that manual
+   .input-icon-addon icon is still present it's hidden here so the two don't
+   stack. */
+.datetimepicker,
+.datetimepicker-dmy,
+.yearpicker,
+.filter-datepicker,
+.filter-daterange {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23515B73' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5' width='16' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M4 11h16'/%3E%3C/svg%3E") !important;
+	background-repeat: no-repeat !important;
+	background-position: right 12px center !important;
+	background-size: 16px 16px !important;
+	padding-right: 36px !important;
+}
+.timepicker {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23515B73' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 3'/%3E%3C/svg%3E") !important;
+	background-repeat: no-repeat !important;
+	background-position: right 12px center !important;
+	background-size: 16px 16px !important;
+	padding-right: 36px !important;
+}
+.input-icon:has(.datetimepicker) .input-icon-addon,
+.input-icon-end:has(.datetimepicker) .input-icon-addon,
+.input-icon:has(.datetimepicker-dmy) .input-icon-addon,
+.input-icon-end:has(.datetimepicker-dmy) .input-icon-addon,
+.input-icon:has(.yearpicker) .input-icon-addon,
+.input-icon-end:has(.yearpicker) .input-icon-addon,
+.input-icon:has(.timepicker) .input-icon-addon,
+.input-icon-end:has(.timepicker) .input-icon-addon {
+	display: none;
+}
+html[data-theme=dark] .datetimepicker,
+html[data-theme=dark] .datetimepicker-dmy,
+html[data-theme=dark] .yearpicker,
+html[data-theme=dark] .filter-datepicker,
+html[data-theme=dark] .filter-daterange {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23B9B7C0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='4' y='5' width='16' height='16' rx='2'/%3E%3Cpath d='M16 3v4M8 3v4M4 11h16'/%3E%3C/svg%3E") !important;
+}
+html[data-theme=dark] .timepicker {
+	background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23B9B7C0' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9'/%3E%3Cpath d='M12 7v5l3 3'/%3E%3C/svg%3E") !important;
+}

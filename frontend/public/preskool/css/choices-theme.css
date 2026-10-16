@@ -1,0 +1,246 @@
+/* Choices.js visual-parity shim - replicates the Select2 theming that used to
+   live in the compiled style.css (base look, 5 accent colors, dark mode,
+   .form-sort). Do not edit style.css/SCSS for this - this file is additive. */
+
+.choices {
+	min-width: 100% !important;
+	z-index: 99;
+	margin-bottom: 0;
+}
+.choices[data-type*="select-one"] .choices__inner,
+.choices[data-type*="select-multiple"] .choices__inner,
+.choices[data-type*="text"] .choices__inner {
+	min-height: 38px;
+	border: 1px solid var(--Stroke, rgba(145, 158, 171, 0.3));
+	border-color: #E9EDF4;
+	border-radius: 5px;
+	background-color: #fff;
+	font-size: 14px;
+	padding: 0 30px 4px 10px;
+}
+.choices[data-type*="select-one"] .choices__inner {
+	height: 38px;
+	padding-top: 0;
+	padding-bottom: 0;
+	display: flex;
+	align-items: center;
+}
+.choices[data-type*="text"] .choices__inner {
+	height: 38px;
+	padding: 0 10px;
+	display: flex;
+	align-items: center;
+	flex-wrap: nowrap;
+	overflow-x: auto;
+	overflow-y: hidden;
+}
+.choices[data-type*="text"] .choices__list--multiple {
+	display: flex;
+	flex-wrap: nowrap;
+	align-items: center;
+	flex-shrink: 0;
+}
+.choices[data-type*="text"] .choices__list--multiple .choices__item {
+	flex-shrink: 0;
+	margin: 0 6px 0 0;
+}
+.choices__list--single {
+	padding: 0;
+}
+.choices__list--single .choices__item {
+	color: #202C4B !important;
+	line-height: 38px;
+	font-size: 14px;
+	font-weight: 400;
+	padding: 0;
+	width: 100%;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+}
+.choices[data-type*="select-one"] .choices__inner:after {
+	border-color: #515B73 transparent transparent transparent;
+}
+.choices[data-type*="select-one"].is-open .choices__inner:after {
+	border-color: transparent transparent #000 transparent;
+}
+.choices.is-open .choices__inner {
+	border-color: #3D5EE1;
+}
+.choices.is-focused .choices__inner {
+	background-color: #fff !important;
+	border-color: #E9EDF4;
+}
+.choices.is-open {
+	z-index: 9999;
+}
+.choices__list--dropdown,
+.choices__list[aria-expanded] {
+	border-color: #E9EDF4;
+	box-shadow: 0px 4.4px 12px -1px rgba(222, 222, 222, 0.36);
+	z-index: 9999;
+}
+.choices__list--dropdown .choices__item--selectable.is-highlighted,
+.choices__list[aria-expanded] .choices__item--selectable.is-highlighted {
+	background-color: #3D5EE1 !important;
+	color: #fff !important;
+}
+.choices[data-type*="select-multiple"] .choices__inner {
+	min-height: 38px;
+	overflow: hidden;
+}
+.choices__list--multiple .choices__item {
+	background-color: #fff !important;
+	border: 1px solid #E9EDF4 !important;
+	color: #202C4B !important;
+	border-radius: 4px !important;
+	padding: 0px 7px !important;
+	margin: 0 6px 6px 0 !important;
+	font-size: 10px;
+}
+.choices__list--multiple .choices__item .choices__button {
+	position: relative;
+	display: inline-block;
+	margin: 0 0 0 8px;
+	padding-left: 10px;
+	border-left: 1px solid #E9EDF4;
+	filter: brightness(0);
+	opacity: .5;
+}
+.choices__list--multiple .choices__item .choices__button:hover {
+	opacity: 1;
+}
+.choices.is-focused[data-type*="select-multiple"] .choices__inner {
+	border-color: #3D5EE1;
+}
+.choices__input {
+	background-color: #fff;
+	font-size: 14px;
+}
+.choices__list--dropdown .choices__input {
+	border-color: #E9EDF4;
+}
+.choices[data-type*="select-one"].is-disabled .choices__inner,
+.choices[data-type*="select-multiple"].is-disabled .choices__inner {
+	background-color: #eee;
+	cursor: default;
+}
+
+/* ---- accent color variants (mirrors the [data-color=X] Select2 rules) ---- */
+[data-color=violet] .choices.is-open .choices__inner,
+[data-color=violet] .choices__list--dropdown .choices__item--selectable.is-highlighted { background-color: #673AB7; border-color: #673AB7; }
+[data-color=violet] .choices__list--dropdown .choices__item--selectable.is-highlighted { color: #fff; }
+
+[data-color=pink] .choices.is-open .choices__inner,
+[data-color=pink] .choices__list--dropdown .choices__item--selectable.is-highlighted { background-color: #E83E8C; border-color: #E83E8C; }
+[data-color=pink] .choices__list--dropdown .choices__item--selectable.is-highlighted { color: #fff; }
+
+[data-color=orange] .choices.is-open .choices__inner,
+[data-color=orange] .choices__list--dropdown .choices__item--selectable.is-highlighted { background-color: #FD7E14; border-color: #FD7E14; }
+[data-color=orange] .choices__list--dropdown .choices__item--selectable.is-highlighted { color: #fff; }
+
+[data-color=green] .choices.is-open .choices__inner,
+[data-color=green] .choices__list--dropdown .choices__item--selectable.is-highlighted { background-color: #2CA87F; border-color: #2CA87F; }
+[data-color=green] .choices__list--dropdown .choices__item--selectable.is-highlighted { color: #fff; }
+
+[data-color=red] .choices.is-open .choices__inner,
+[data-color=red] .choices__list--dropdown .choices__item--selectable.is-highlighted { background-color: #DC2626; border-color: #DC2626; }
+[data-color=red] .choices__list--dropdown .choices__item--selectable.is-highlighted { color: #fff; }
+/* violet/pink/orange/green/red only override the *open border* + *highlighted
+   option background*, same two properties Select2 themed - background-color
+   above intentionally doubles as the open-border color source per that rule. */
+[data-color=violet] .choices.is-open .choices__inner { background-color: transparent; }
+[data-color=pink] .choices.is-open .choices__inner { background-color: transparent; }
+[data-color=orange] .choices.is-open .choices__inner { background-color: transparent; }
+[data-color=green] .choices.is-open .choices__inner { background-color: transparent; }
+[data-color=red] .choices.is-open .choices__inner { background-color: transparent; }
+
+/* ---- dark mode ---- */
+html .darkmode .choices[data-type*="select-one"] .choices__inner,
+html[data-theme=dark] .choices[data-type*="select-one"] .choices__inner,
+html .darkmode .choices[data-type*="select-multiple"] .choices__inner,
+html[data-theme=dark] .choices[data-type*="select-multiple"] .choices__inner,
+html .darkmode .choices[data-type*="text"] .choices__inner,
+html[data-theme=dark] .choices[data-type*="text"] .choices__inner {
+	background-color: #131022 !important;
+	border-color: #1B1632 !important;
+}
+html .darkmode .choices__list--single .choices__item,
+html[data-theme=dark] .choices__list--single .choices__item {
+	color: #EFEFF2 !important;
+	background-color: transparent !important;
+}
+html .darkmode .choices[data-type*="select-one"] .choices__inner:after,
+html[data-theme=dark] .choices[data-type*="select-one"] .choices__inner:after {
+	border-color: #B9B7C0 transparent transparent transparent !important;
+}
+html .darkmode .choices__list--multiple .choices__item,
+html[data-theme=dark] .choices__list--multiple .choices__item {
+	background-color: #1B1632 !important;
+	border-color: #1B1632 !important;
+	color: #EFEFF2 !important;
+}
+html .darkmode .choices__list--multiple .choices__item .choices__button,
+html[data-theme=dark] .choices__list--multiple .choices__item .choices__button {
+	border-left-color: rgba(185, 183, 192, 0.3) !important;
+	filter: brightness(0) invert(1) !important;
+}
+html .darkmode .choices__list--multiple .choices__item .choices__button:hover,
+html[data-theme=dark] .choices__list--multiple .choices__item .choices__button:hover {
+	background-color: rgba(0, 0, 0, 0.2) !important;
+}
+html .darkmode .choices__input,
+html[data-theme=dark] .choices__input {
+	color: #EFEFF2 !important;
+	background-color: transparent !important;
+}
+html .darkmode .choices__list--dropdown .choices__input,
+html[data-theme=dark] .choices__list--dropdown .choices__input {
+	background-color: #0F0C1C !important;
+	border-color: #1B1632 !important;
+	color: #EFEFF2 !important;
+}
+html .darkmode .choices__list--dropdown,
+html[data-theme=dark] .choices__list--dropdown {
+	background-color: #131022 !important;
+	border-color: #1B1632 !important;
+	color: #EFEFF2 !important;
+	box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4) !important;
+}
+html .darkmode .choices__list--dropdown .choices__list,
+html[data-theme=dark] .choices__list--dropdown .choices__list {
+	border-color: #1B1632 !important;
+	background-color: #131022 !important;
+	color: #EFEFF2 !important;
+}
+html .darkmode .choices__item--selectable,
+html[data-theme=dark] .choices__item--selectable {
+	background-color: #131022 !important;
+	color: #EFEFF2 !important;
+}
+html .darkmode .choices__item--selectable.is-disabled,
+html[data-theme=dark] .choices__item--selectable.is-disabled {
+	color: rgba(91, 87, 107, 0.698) !important;
+	background-color: #0F0C1C !important;
+}
+html .darkmode .choices__item--selectable.is-selected,
+html[data-theme=dark] .choices__item--selectable.is-selected {
+	background-color: #1B1632 !important;
+	color: #ffffff !important;
+}
+html .darkmode .choices__item--selectable.is-highlighted,
+html[data-theme=dark] .choices__item--selectable.is-highlighted {
+	background-color: #3d5ee1 !important;
+	color: #ffffff !important;
+}
+
+/* ---- .form-sort compact toolbar select ---- */
+.form-sort .choices {
+	min-width: 0 !important;
+}
+.form-sort .choices__list--single .choices__item {
+	padding-left: 35px;
+}
+.form-sort .choices.is-open {
+	z-index: 99;
+}

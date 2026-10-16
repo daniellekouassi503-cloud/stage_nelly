@@ -1,0 +1,11 @@
+/backend/vendor
+/backend/.env
+/backend/storage/logs/*
+/backend/storage/framework/cache/data
+/backend/storage/framework/sessions
+/backend/storage/framework/views
+/backend/.phpunit.result.cache
+/frontend/node_modules
+/frontend/dist
+/_preskool_extract
+/_templates_roles

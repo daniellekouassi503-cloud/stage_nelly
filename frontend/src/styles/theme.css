@@ -1,0 +1,51 @@
+/* Complète le template Preskool : interface en français, sans dégradé. */
+#global-loader { display: none !important; }
+
+:root {
+  --marque: #1f4e79;
+}
+
+body, .btn, .badge, .card, .sidebar, .header, .page-wrapper,
+.bg-primary, .btn-primary, .progress-bar {
+  background-image: none !important;
+}
+
+.btn-primary, .badge.bg-primary, .bg-primary {
+  background-color: var(--marque) !important;
+  border-color: var(--marque) !important;
+}
+
+.sidebar-menu ul li a.router-link-active,
+.sidebar-menu ul li a.router-link-exact-active {
+  color: var(--marque);
+  background: #eaf2fb;
+}
+
+.marque-texte {
+  color: var(--marque);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+
+.etat-vide, .etat-chargement, .etat-erreur {
+  padding: 2rem 1rem;
+  text-align: center;
+  color: #64748b;
+}
+
+.etat-erreur { color: #b42318; }
+
+.table td, .table th { vertical-align: middle; }
+
+.pastille-simulation {
+  background: #fff7ed;
+  color: #9a3412;
+  border: 1px solid #fdba74;
+  border-radius: 4px;
+  padding: 0.15rem 0.45rem;
+  font-size: 0.75rem;
+}
+
+@media (max-width: 991.98px) {
+  .page-wrapper .content { padding-left: 12px; padding-right: 12px; }
+}
