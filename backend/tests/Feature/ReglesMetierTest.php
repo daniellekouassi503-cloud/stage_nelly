@@ -310,6 +310,36 @@ class ReglesMetierTest extends EcoleTestCase
         $this->assertDatabaseMissing('utilisateurs', ['email' => 'intrus@test.local']);
     }
 
+    public function test_un_utilisateur_change_son_propre_mot_de_passe(): void
+    {
+        $this->scene();
+        $identifiants = ['email' => 'parent@test.local', 'matricule' => 'ETU001'];
+
+        $jeton = $this->postJson('/api/auth/connexion', [...$identifiants, 'mot_de_passe' => 'Demo-2026!'])
+            ->assertOk()
+            ->json('donnees.jeton');
+
+        // Mauvais mot de passe actuel : refusé.
+        $this->withToken($jeton)->postJson('/api/auth/mot-de-passe', [
+            'mot_de_passe_actuel' => 'faux-mot-de-passe',
+            'mot_de_passe' => 'Nouveau-2026!',
+            'mot_de_passe_confirmation' => 'Nouveau-2026!',
+        ])->assertStatus(422)->assertJsonValidationErrors('mot_de_passe_actuel');
+
+        $this->withToken($jeton)->postJson('/api/auth/mot-de-passe', [
+            'mot_de_passe_actuel' => 'Demo-2026!',
+            'mot_de_passe' => 'Nouveau-2026!',
+            'mot_de_passe_confirmation' => 'Nouveau-2026!',
+        ])->assertOk();
+
+        // Simule une nouvelle requête : le middleware auth:sanctum a changé le garde par défaut.
+        $this->app['auth']->forgetGuards();
+        $this->app['auth']->shouldUse('web');
+        $this->postJson('/api/auth/connexion', [...$identifiants, 'mot_de_passe' => 'Demo-2026!'])->assertStatus(422);
+        $this->postJson('/api/auth/connexion', [...$identifiants, 'mot_de_passe' => 'Nouveau-2026!'])->assertOk();
+        $this->assertDatabaseHas('journaux_activite', ['action' => 'compte.mot_de_passe']);
+    }
+
     public function test_l_administrateur_publie_un_planning_de_composition_par_filiere_et_niveau(): void
     {
         $scene = $this->scene();

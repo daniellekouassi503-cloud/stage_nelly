@@ -51,6 +51,7 @@
                 </div>
                 <div class="mui-profile-body">
                   <router-link class="dropdown-item" to="/"><i class="ti ti-home"></i>Page d’accueil</router-link>
+                  <router-link class="dropdown-item" to="/mon-compte"><i class="ti ti-user-cog"></i>Mon compte</router-link>
                   <router-link class="dropdown-item" to="/notifications"><i class="ti ti-bell"></i>Notifications</router-link>
                   <button class="dropdown-item text-danger" type="button" @click="sortir"><i class="ti ti-logout"></i>Déconnexion</button>
                 </div>

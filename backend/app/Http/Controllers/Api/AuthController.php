@@ -6,11 +6,13 @@ use App\Http\Controllers\Controller;
 use App\Models\Etudiant;
 use App\Models\Utilisateur;
 use App\Services\CompteService;
+use App\Services\JournalService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\ValidationException;
+use Laravel\Sanctum\PersonalAccessToken;
 
 class AuthController extends Controller
 {
@@ -182,6 +184,33 @@ class AuthController extends Controller
         $utilisateur = $request->user()->load(['etudiant', 'enseignant', 'parentRattache.enfants.utilisateur']);
 
         return response()->json(['donnees' => $utilisateur->resume()]);
+    }
+
+    public function changerMotDePasse(Request $request, JournalService $journal): JsonResponse
+    {
+        $donnees = $request->validate([
+            'mot_de_passe_actuel' => ['required', 'string', 'current_password:sanctum'],
+            'mot_de_passe' => ['required', 'string', 'min:8', 'confirmed', 'different:mot_de_passe_actuel'],
+        ], [
+            'mot_de_passe_actuel.current_password' => 'Le mot de passe actuel est incorrect.',
+            'mot_de_passe.confirmed' => 'La confirmation du nouveau mot de passe ne correspond pas.',
+            'mot_de_passe.min' => 'Le nouveau mot de passe doit contenir au moins 8 caractères.',
+            'mot_de_passe.different' => 'Le nouveau mot de passe doit être différent de l’actuel.',
+        ]);
+
+        /** @var Utilisateur $utilisateur */
+        $utilisateur = $request->user();
+        $utilisateur->mot_de_passe = $donnees['mot_de_passe'];
+        $utilisateur->save();
+
+        // Les autres sessions ouvertes (autre appareil) sont fermées ; la session courante reste active.
+        $jetonCourant = $utilisateur->currentAccessToken();
+        $utilisateur->tokens()
+            ->when($jetonCourant instanceof PersonalAccessToken, fn ($q) => $q->where('id', '!=', $jetonCourant->getKey()))
+            ->delete();
+        $journal->ecrire($utilisateur, 'compte.mot_de_passe', 'Mot de passe modifié par l’utilisateur.', $request);
+
+        return response()->json(['message' => 'Mot de passe modifié.']);
     }
 
     public function deconnexion(Request $request): JsonResponse

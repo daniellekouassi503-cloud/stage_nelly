@@ -19,6 +19,7 @@ Route::post('/auth/inscription-parent', [AuthController::class, 'inscriptionPare
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/auth/moi', [AuthController::class, 'moi']);
     Route::post('/auth/deconnexion', [AuthController::class, 'deconnexion']);
+    Route::post('/auth/mot-de-passe', [AuthController::class, 'changerMotDePasse'])->middleware('throttle:connexion');
     Route::get('/notifications', [SuiviController::class, 'notifications']);
     Route::post('/notifications/{notification}/lire', [SuiviController::class, 'lire']);
     Route::post('/notifications/tout-lire', [SuiviController::class, 'toutLire']);

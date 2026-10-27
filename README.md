@@ -107,6 +107,8 @@ Ces identifiants sont fictifs. Ne pas les réutiliser hors d’une machine de te
 - Inscription parent : il faut le matricule de l’enfant **et** le téléphone du parent enregistré dans le dossier de l’étudiant (second facteur). Si les deux correspondent, le compte est actif immédiatement (pas de validation admin) ; sinon, un message unique ne révèle pas si le matricule existe
 - Connexion parent : matricule obligatoire, existant et rattaché au compte ; message « Bienvenue parent « nom de l’étudiant » »
 - Retour possible vers la page d’accueil depuis l’espace connecté ; déconnexion vers l’accueil
+- Page « Mon compte » : chaque utilisateur remplace lui-même le mot de passe reçu de l’administration (ancien mot de passe exigé, autres sessions fermées)
+- Emploi du temps, liste de classe et plannings de composition, visibles selon la filière et le niveau
 - Page publique `/formalites-inscription` alignée sur les formalités EPCCI
 - Années, filières, niveaux, classes, matières, coefficients, inscriptions et affectations
 - Notes sur 20, brouillon, soumission, publication
@@ -128,20 +130,25 @@ Filières reprises du dossier : IDA, Logistique Transport, Finance Comptabilité
 
 Commande : `php artisan test` dans `backend`.
 
-Résultat au 16 octobre 2026 : **10 tests, 10 réussites, 40 assertions**.
+Résultat au 27 octobre 2026 : **21 tests, 21 réussites, 133 assertions**.
 
 Ils couvrent :
 
 - le calcul et l’arrondi des moyennes
 - l’invisibilité d’une note non publiée, y compris par appel direct
 - l’interdiction pour un étudiant de lire le relevé d’un autre
-- le parent limité à son enfant rattaché ; inscription parent refusée si le matricule est inconnu
+- le parent limité à son enfant rattaché ; inscription parent refusée si le matricule est inconnu ou si le téléphone ne correspond pas au dossier de l’étudiant (même message dans les deux cas)
+- le changement de son propre mot de passe (ancien mot de passe exigé, ancien mot de passe refusé ensuite, action journalisée)
 - la publication seulement après soumission
 - la simulation de paiement, le rejet sans motif, l’interdiction pour l’étudiant de valider, le reçu PDF et l’accès refusé à un autre étudiant
 - le téléchargement d’un support refusé à une autre filière
 - la génération du relevé PDF
+- les plannings de composition, l’emploi du temps et la liste de classe par filière et niveau
+- la gestion quotidienne des comptes par l’administrateur
 
 `npm run build` dans `frontend` s’est terminé sans erreur.
+
+**Intégration continue** : à chaque envoi sur GitHub, le fichier `.github/workflows/tests.yml` relance automatiquement les tests du backend et la compilation du frontend. Le résultat est visible dans l’onglet *Actions* du dépôt.
 
 Vérification dans le navigateur, le 16 octobre 2026, avec l’API sur le port 8001 et Vite sur le port 5173 :
 

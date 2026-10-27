@@ -26,6 +26,14 @@ class PaiementService
             ->where('matricule', $etudiant->matricule)
             ->get();
 
+        // Une seule requête pour toutes les fiches de l'étudiant (au lieu d'une par tranche).
+        $fichesParTranche = FicheVersement::query()
+            ->where('matricule', $etudiant->matricule)
+            ->whereIn('statut_paiement', ['en_attente_paiement', 'valide'])
+            ->orderByDesc('date_generation')
+            ->get()
+            ->groupBy('code_tranche');
+
         $annees = [];
         $totalDu = 0;
         $totalPaye = 0;
@@ -43,12 +51,7 @@ class PaiementService
             $paye = 0;
 
             foreach ($tranches as $tranche) {
-                $fiche = FicheVersement::query()
-                    ->where('matricule', $etudiant->matricule)
-                    ->where('code_tranche', $tranche->code_tranche)
-                    ->whereIn('statut_paiement', ['en_attente_paiement', 'valide'])
-                    ->latest('date_generation')
-                    ->first();
+                $fiche = $fichesParTranche->get($tranche->code_tranche)?->first();
 
                 $du += $tranche->montant_tranche;
                 if ($fiche?->statut_paiement === 'valide') {

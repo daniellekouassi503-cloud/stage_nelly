@@ -22,6 +22,7 @@ const routes = [
       { path: 'supports', name: 'supports', component: () => import('../views/Supports.vue'), meta: { titre: 'Supports de cours' } },
       { path: 'frais', name: 'frais', component: () => import('../views/Frais.vue'), meta: { roles: ['etudiant', 'parent', 'administrateur'], titre: 'Frais de scolarité' } },
       { path: 'paiements', name: 'paiements', component: () => import('../views/Paiements.vue'), meta: { roles: ['administrateur'], titre: 'Vérification des paiements' } },
+      { path: 'mon-compte', name: 'mon-compte', component: () => import('../views/MonCompte.vue'), meta: { titre: 'Mon compte' } },
       { path: 'notifications', name: 'notifications', component: () => import('../views/Notifications.vue'), meta: { titre: 'Notifications' } },
       { path: 'journal', name: 'journal', component: () => import('../views/Journal.vue'), meta: { roles: ['administrateur'], titre: 'Journal d’activité' } },
     ],
