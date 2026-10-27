@@ -7,7 +7,13 @@ use App\Models\AnneeScolaire;
 use App\Models\DemandeRattachement;
 use App\Models\Enseignant;
 use App\Models\Etudiant;
+use App\Models\Evaluation;
+use App\Models\FicheVersement;
+use App\Models\Inscription;
+use App\Models\Note;
+use App\Models\Notification;
 use App\Models\ParentTuteur;
+use App\Models\Signalement;
 use App\Models\SupportCours;
 use App\Models\Utilisateur;
 use Illuminate\Auth\Access\AuthorizationException;
@@ -61,6 +67,21 @@ class CompteService
     public function inscrireParent(array $donnees): Utilisateur
     {
         return DB::transaction(function () use ($donnees) {
+            // Second facteur : le téléphone saisi doit être celui que l'établissement
+            // a enregistré dans le dossier de l'enfant. Connaître le matricule ne suffit pas.
+            // Message identique dans tous les cas pour ne pas révéler quels matricules existent.
+            $telephone = $this->normaliserTelephone($donnees['telephone']);
+            foreach ($donnees['enfants'] as $enfant) {
+                $etudiant = Etudiant::query()->where('matricule', $enfant['matricule'])->first();
+                $telephoneDossier = $this->normaliserTelephone((string) $etudiant?->telephone_parent);
+
+                if (! $etudiant || $telephoneDossier === '' || ! hash_equals($telephoneDossier, $telephone)) {
+                    throw ValidationException::withMessages([
+                        'enfants' => 'Le matricule et le téléphone ne correspondent à aucun dossier étudiant. Utilisez le numéro de téléphone donné à l’établissement lors de l’inscription, ou contactez l’administration.',
+                    ]);
+                }
+            }
+
             $utilisateur = Utilisateur::query()->create([
                 'nom_utilisateur' => $donnees['nom'],
                 'prenoms_utilisateur' => $donnees['prenoms'],
@@ -68,7 +89,7 @@ class CompteService
                 'telephone_utilisateur' => $donnees['telephone'],
                 'mot_de_passe' => $donnees['mot_de_passe'],
                 'role' => 'parent',
-                'statut_compte' => 'en_attente',
+                'statut_compte' => 'valide',
                 'date_creation' => now(),
             ]);
 
@@ -79,31 +100,42 @@ class CompteService
             ]);
 
             foreach ($donnees['enfants'] as $enfant) {
-                if (! Etudiant::query()->where('matricule', $enfant['matricule'])->exists()) {
-                    throw ValidationException::withMessages([
-                        'enfants' => "Aucun étudiant ne porte le matricule {$enfant['matricule']}.",
-                    ]);
-                }
+                DB::table('rattacher')->updateOrInsert(
+                    ['code_parent' => $code, 'matricule' => $enfant['matricule']],
+                    ['lien_parente' => $enfant['lien_parente'] ?? null]
+                );
 
-                DemandeRattachement::query()->create([
-                    'code_parent' => $code,
-                    'matricule' => $enfant['matricule'],
-                    'lien_parente' => $enfant['lien_parente'] ?? null,
-                    'statut' => 'en_attente',
-                    'date_demande' => now(),
-                ]);
+                DemandeRattachement::query()->updateOrCreate(
+                    ['code_parent' => $code, 'matricule' => $enfant['matricule']],
+                    [
+                        'lien_parente' => $enfant['lien_parente'] ?? null,
+                        'statut' => 'accepte',
+                        'date_demande' => now(),
+                    ]
+                );
             }
 
-            $admins = Utilisateur::query()->where('role', 'administrateur')->where('statut_compte', 'valide')->pluck('id_utilisateur');
-            $this->notifications->envoyerPlusieurs(
-                $admins,
+            $this->notifications->envoyer(
+                $utilisateur->id_utilisateur,
                 'compte_parent',
-                "Nouvelle demande de compte parent : {$utilisateur->nomComplet()}."
+                'Votre compte parent est actif. Le matricule saisi correspond à un étudiant de l’établissement.'
             );
-            $this->journal->ecrire($utilisateur, 'compte.parent.demande', "Demande de compte parent {$code}.", request());
+            $this->journal->ecrire($utilisateur, 'compte.parent.inscription', "Compte parent {$code} créé et activé automatiquement.", request());
 
-            return $utilisateur->fresh('parentRattache');
+            return $utilisateur->fresh(['parentRattache.enfants']);
         });
+    }
+
+    /**
+     * Garde uniquement les chiffres et retire l'indicatif +225 / 00225,
+     * pour que « 07 00 00 00 01 » et « +225 0700000001 » soient identiques.
+     */
+    private function normaliserTelephone(string $telephone): string
+    {
+        $chiffres = preg_replace('/\D+/', '', $telephone) ?? '';
+        $chiffres = preg_replace('/^(00)?225(?=\d{10}$)/', '', $chiffres) ?? $chiffres;
+
+        return $chiffres;
     }
 
     public function deciderParent(Utilisateur $admin, ParentTuteur $parent, string $decision, array $choix, ?string $motif): ParentTuteur
@@ -180,6 +212,155 @@ class CompteService
         });
     }
 
+    public function modifierEtudiant(Utilisateur $admin, Etudiant $etudiant, array $donnees): Etudiant
+    {
+        $this->exigerAdministrateur($admin);
+
+        return DB::transaction(function () use ($admin, $etudiant, $donnees) {
+            $etudiant->load('utilisateur');
+            $utilisateur = $etudiant->utilisateur;
+            if (! $utilisateur) {
+                throw ValidationException::withMessages(['etudiant' => 'Compte utilisateur introuvable.']);
+            }
+
+            $this->mettreAJourIdentite($utilisateur, $donnees);
+            $etudiant->nom_parent = $donnees['nom_parent'] ?? $etudiant->nom_parent;
+            $etudiant->telephone_parent = $donnees['telephone_parent'] ?? $etudiant->telephone_parent;
+            $etudiant->save();
+
+            $this->journal->ecrire($admin, 'etudiant.modification', "Étudiant {$etudiant->matricule} modifié.", request());
+
+            return $etudiant->fresh('utilisateur');
+        });
+    }
+
+    public function modifierEnseignant(Utilisateur $admin, Enseignant $enseignant, array $donnees): Enseignant
+    {
+        $this->exigerAdministrateur($admin);
+
+        return DB::transaction(function () use ($admin, $enseignant, $donnees) {
+            $enseignant->load('utilisateur');
+            $utilisateur = $enseignant->utilisateur;
+            if (! $utilisateur) {
+                throw ValidationException::withMessages(['enseignant' => 'Compte utilisateur introuvable.']);
+            }
+
+            $this->mettreAJourIdentite($utilisateur, $donnees);
+            $this->journal->ecrire($admin, 'enseignant.modification', "Enseignant {$enseignant->code_enseignant} modifié.", request());
+
+            return $enseignant->fresh('utilisateur');
+        });
+    }
+
+    public function modifierParent(Utilisateur $admin, ParentTuteur $parent, array $donnees): ParentTuteur
+    {
+        $this->exigerAdministrateur($admin);
+
+        return DB::transaction(function () use ($admin, $parent, $donnees) {
+            $parent->load('utilisateur');
+            $utilisateur = $parent->utilisateur;
+            if (! $utilisateur) {
+                throw ValidationException::withMessages(['parent' => 'Compte utilisateur introuvable.']);
+            }
+
+            $this->mettreAJourIdentite($utilisateur, $donnees);
+            $this->journal->ecrire($admin, 'compte.parent.modification', "Parent {$parent->code_parent} modifié.", request());
+
+            return $parent->fresh('utilisateur');
+        });
+    }
+
+    public function reinitialiserMotDePasse(Utilisateur $admin, Utilisateur $cible, string $motDePasse): void
+    {
+        $this->exigerAdministrateur($admin);
+        $cible->mot_de_passe = $motDePasse;
+        $cible->save();
+        $cible->tokens()->delete();
+        $this->journal->ecrire(
+            $admin,
+            'compte.mot_de_passe',
+            "Mot de passe réinitialisé pour l’utilisateur {$cible->id_utilisateur}.",
+            request()
+        );
+    }
+
+    public function supprimerEnseignant(Utilisateur $admin, Enseignant $enseignant): void
+    {
+        $this->exigerAdministrateur($admin);
+
+        DB::transaction(function () use ($admin, $enseignant) {
+            $enseignant->load('utilisateur');
+            $code = $enseignant->code_enseignant;
+            $utilisateur = $enseignant->utilisateur;
+
+            $evaluations = Evaluation::query()->where('code_enseignant', $code)->pluck('num_evaluation');
+            if ($evaluations->isNotEmpty()) {
+                Signalement::query()->whereIn('num_evaluation', $evaluations)->delete();
+                Note::query()->whereIn('num_evaluation', $evaluations)->delete();
+                Evaluation::query()->whereIn('num_evaluation', $evaluations)->delete();
+            }
+
+            $supports = SupportCours::query()->where('code_enseignant', $code)->get();
+            foreach ($supports as $support) {
+                $this->supprimerFichierSupport($support);
+                $support->delete();
+            }
+
+            Affectation::query()->where('code_enseignant', $code)->delete();
+            $enseignant->delete();
+            if ($utilisateur) {
+                $this->supprimerCompteUtilisateur($utilisateur);
+            }
+
+            $this->journal->ecrire($admin, 'enseignant.suppression', "Enseignant {$code} supprimé.", request());
+        });
+    }
+
+    public function supprimerEtudiant(Utilisateur $admin, Etudiant $etudiant): void
+    {
+        $this->exigerAdministrateur($admin);
+
+        DB::transaction(function () use ($admin, $etudiant) {
+            $etudiant->load('utilisateur');
+            $matricule = $etudiant->matricule;
+            $utilisateur = $etudiant->utilisateur;
+
+            Signalement::query()->where('matricule', $matricule)->delete();
+            Note::query()->where('matricule', $matricule)->delete();
+            FicheVersement::query()->where('matricule', $matricule)->delete();
+            DB::table('rattacher')->where('matricule', $matricule)->delete();
+            DemandeRattachement::query()->where('matricule', $matricule)->delete();
+            Inscription::query()->where('matricule', $matricule)->delete();
+
+            $etudiant->delete();
+            if ($utilisateur) {
+                $this->supprimerCompteUtilisateur($utilisateur);
+            }
+
+            $this->journal->ecrire($admin, 'etudiant.suppression', "Étudiant {$matricule} supprimé.", request());
+        });
+    }
+
+    public function supprimerParent(Utilisateur $admin, ParentTuteur $parent): void
+    {
+        $this->exigerAdministrateur($admin);
+
+        DB::transaction(function () use ($admin, $parent) {
+            $parent->load('utilisateur');
+            $code = $parent->code_parent;
+            $utilisateur = $parent->utilisateur;
+
+            DB::table('rattacher')->where('code_parent', $code)->delete();
+            DemandeRattachement::query()->where('code_parent', $code)->delete();
+            $parent->delete();
+            if ($utilisateur) {
+                $this->supprimerCompteUtilisateur($utilisateur);
+            }
+
+            $this->journal->ecrire($admin, 'compte.parent.suppression', "Compte parent {$code} supprimé.", request());
+        });
+    }
+
     public function deposerSupport(Utilisateur $acteur, array $donnees, UploadedFile $fichier): SupportCours
     {
         $codeEnseignant = $donnees['code_enseignant'] ?? $acteur->enseignant?->code_enseignant;
@@ -249,6 +430,48 @@ class CompteService
         if ($support->fichier_support && Storage::disk('supports')->exists($support->fichier_support)) {
             Storage::disk('supports')->delete($support->fichier_support);
         }
+    }
+
+    private function mettreAJourIdentite(Utilisateur $utilisateur, array $donnees): void
+    {
+        if (! empty($donnees['email']) && $donnees['email'] !== $utilisateur->email) {
+            $pris = Utilisateur::query()
+                ->where('email', $donnees['email'])
+                ->where('id_utilisateur', '!=', $utilisateur->id_utilisateur)
+                ->exists();
+            if ($pris) {
+                throw ValidationException::withMessages([
+                    'email' => 'Cette adresse e-mail est déjà utilisée.',
+                ]);
+            }
+            $utilisateur->email = $donnees['email'];
+        }
+
+        if (array_key_exists('nom', $donnees) && filled($donnees['nom'])) {
+            $utilisateur->nom_utilisateur = $donnees['nom'];
+        }
+        if (array_key_exists('prenoms', $donnees) && filled($donnees['prenoms'])) {
+            $utilisateur->prenoms_utilisateur = $donnees['prenoms'];
+        }
+        if (array_key_exists('telephone', $donnees)) {
+            $utilisateur->telephone_utilisateur = $donnees['telephone'];
+        }
+        $utilisateur->save();
+    }
+
+    private function exigerAdministrateur(Utilisateur $admin): void
+    {
+        if ($admin->role !== 'administrateur') {
+            throw new AuthorizationException('Action réservée à l’administration.');
+        }
+    }
+
+    private function supprimerCompteUtilisateur(Utilisateur $utilisateur): void
+    {
+        $utilisateur->tokens()->delete();
+        Notification::query()->where('id_utilisateur', $utilisateur->id_utilisateur)->delete();
+        FicheVersement::query()->where('id_utilisateur', $utilisateur->id_utilisateur)->update(['id_utilisateur' => null]);
+        $utilisateur->delete();
     }
 
     public function prochainCode(string $prefixe, string $modele, string $colonne): string

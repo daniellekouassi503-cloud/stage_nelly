@@ -18,7 +18,8 @@ Cette application est une proposition. Elle n’a pas été adoptée ni déploy�
 - `backend/` : API Laravel, migrations, règles métier, PDF, tests
 - `frontend/` : interface Vue.js
 - `frontend/public/preskool/` : ressources visuelles du template (CSS, polices, images, Bootstrap)
-- `WORDstage` n’est pas dans ce dossier : il se trouve dans `Bureau/WORDstage` et a servi de source métier
+- `WORDstage/` : règles métier complémentaires du projet (ex. connexion parent avec matricule)
+- Le dossier Word d’origine sur le Bureau a aussi servi de source métier
 
 La base déjà présente `gestion_scolaire` n’a pas été modifiée. Cette application utilise une base séparée, `plateforme_scolaire`.
 
@@ -94,8 +95,8 @@ Uniquement pour un environnement local. Mot de passe commun : `Demo-2026!`
 | Enseignant | enseignant@plateforme.test |
 | Étudiant | etudiant@plateforme.test |
 | Second étudiant | etudiant2@plateforme.test |
-| Parent validé (enfant ETU-2025-001) | parent@plateforme.test |
-| Parent en attente | parent.attente@plateforme.test |
+| Parent d’Aya (saisir aussi le matricule `ETU-2025-001`) | parent@plateforme.test |
+| Parent de Moussa (saisir aussi le matricule `ETU-2025-002`) | parent2@plateforme.test |
 
 Ces identifiants sont fictifs. Ne pas les réutiliser hors d’une machine de test. Le seeder ne tourne pas si l’environnement n’est pas `local`.
 
@@ -103,7 +104,10 @@ Ces identifiants sont fictifs. Ne pas les réutiliser hors d’une machine de te
 
 - Quatre espaces distincts : administrateur, enseignant, étudiant, parent
 - Comptes étudiants et enseignants créés par l’administration
-- Inscription parent en libre service, statut « en attente », validation administrative et rattachement vérifié côté serveur
+- Inscription parent : il faut le matricule de l’enfant **et** le téléphone du parent enregistré dans le dossier de l’étudiant (second facteur). Si les deux correspondent, le compte est actif immédiatement (pas de validation admin) ; sinon, un message unique ne révèle pas si le matricule existe
+- Connexion parent : matricule obligatoire, existant et rattaché au compte ; message « Bienvenue parent « nom de l’étudiant » »
+- Retour possible vers la page d’accueil depuis l’espace connecté ; déconnexion vers l’accueil
+- Page publique `/formalites-inscription` alignée sur les formalités EPCCI
 - Années, filières, niveaux, classes, matières, coefficients, inscriptions et affectations
 - Notes sur 20, brouillon, soumission, publication
 - Une note non publiée n’est pas renvoyée aux étudiants ni aux parents
@@ -131,7 +135,7 @@ Ils couvrent :
 - le calcul et l’arrondi des moyennes
 - l’invisibilité d’une note non publiée, y compris par appel direct
 - l’interdiction pour un étudiant de lire le relevé d’un autre
-- le parent validé limité à son enfant, et le parent en attente refusé
+- le parent limité à son enfant rattaché ; inscription parent refusée si le matricule est inconnu
 - la publication seulement après soumission
 - la simulation de paiement, le rejet sans motif, l’interdiction pour l’étudiant de valider, le reçu PDF et l’accès refusé à un autre étudiant
 - le téléchargement d’un support refusé à une autre filière
@@ -161,7 +165,7 @@ Le dossier ne fixe pas toutes les valeurs opérationnelles. Les choix suivants s
 - Le statut `brouillon` s’ajoute à `non_publiee` et `publiee`. La soumission fait passer le brouillon à « non publiée », puis la publication le rend visible.
 - L’arrondi est la moitié supérieure, à deux décimales, appliqué à la moyenne de matière puis à la moyenne générale. Le rapport indique que la règle d’arrondi reste à confirmer avec l’établissement.
 - Les montants des tranches de démonstration sont fictifs (par exemple 150 000 FCFA). L’établissement fixe les vrais montants.
-- La table `demandes_rattachement` conserve la demande du parent avant la décision. Le rattachement définitif est la table `rattacher`.
+- Le rattachement parent–étudiant est enregistré dans `rattacher` dès l’inscription si le matricule est valide. `demandes_rattachement` conserve une trace acceptée.
 - Le journal d’activité est un complément demandé pour l’exploitation, en plus des notifications du MPD.
 - Le mode `simulation` sur la fiche de versement prépare un essai sans banque. Il ne constitue pas une passerelle de paiement.
 - La fiche PDF reprend les champs décrits dans l’étude (matricule, année, identité, filière, niveau, classe, produit, montant). Elle ne reproduit pas le formulaire officiel BANKCOLLECT ni les logos de la Chambre de Commerce et de UBA.
@@ -172,6 +176,23 @@ Le dossier ne fixe pas toutes les valeurs opérationnelles. Les choix suivants s
 - Pas de réinitialisation de mot de passe par e-mail.
 - Pas d’antivirus sur les fichiers téléversés. Les extensions et la taille sont contrôlées, et les fichiers restent hors du dossier public.
 - L’index MySQL de ce poste est limité à 1 000 octets. Les chaînes indexées utilisent donc une longueur compatible (`Schema::defaultStringLength(191)`).
+
+## Identité EPCCI
+
+Le nom affiché est **EPCCI**, à la place de Preskool. Les couleurs reprennent le bordeaux du site public [epcci.edu.ci](https://www.epcci.edu.ci/) (`#5f060d`). La page d’accueil reprend les informations publiques de l’établissement : nom complet, devise CRAC, téléphone, e-mail, rentrée 2026-2027 et filières BTS. Ce portail n’est pas le site institutionnel WordPress ; il sert au suivi des notes, des supports et des frais.
+
+## Versions
+
+La première version de l’interface, plus simple, est conservée dans Git à la racine du projet, commit `63c6f6d`. Pour la revoir sans perdre le travail actuel :
+
+```powershell
+git stash
+git checkout 63c6f6d
+```
+
+Pour revenir à la version en cours : `git checkout main`.
+
+Les trois archives de `template stage` (administration, enseignant, étudiant) fournissent le gabarit Preskool utilisé ensuite : en-tête, menu latéral par rôle et tableaux de bord. Les pages de démonstration du template (chat, paie, faux établissements) ne sont pas reprises.
 
 ## Licence du template
 

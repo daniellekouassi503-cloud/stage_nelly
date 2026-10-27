@@ -3,8 +3,10 @@
 use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\CommunauteController;
 use App\Http\Controllers\Api\DashboardController;
+use App\Http\Controllers\Api\EmploiController;
 use App\Http\Controllers\Api\EvaluationController;
 use App\Http\Controllers\Api\PaiementController;
+use App\Http\Controllers\Api\PlanningCompositionController;
 use App\Http\Controllers\Api\ResultatController;
 use App\Http\Controllers\Api\StructureController;
 use App\Http\Controllers\Api\SuiviController;
@@ -41,6 +43,13 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/evaluations/{evaluation}/notes', [EvaluationController::class, 'notes']);
         Route::get('/signalements', [EvaluationController::class, 'signalements']);
 
+        Route::get('/classes-disponibles', [EmploiController::class, 'classesDisponibles']);
+        Route::get('/emploi-du-temps', [EmploiController::class, 'emploi']);
+        Route::get('/liste-classe', [EmploiController::class, 'listeClasse']);
+
+        Route::get('/plannings', [PlanningCompositionController::class, 'index']);
+        Route::get('/plannings/{planning}/fichier', [PlanningCompositionController::class, 'fichier']);
+
         Route::middleware('role:etudiant')->group(function () {
             Route::post('/evaluations/{evaluation}/signalements', [EvaluationController::class, 'signaler']);
         });
@@ -73,10 +82,19 @@ Route::middleware('auth:sanctum')->group(function () {
 
             Route::get('/etudiants', [CommunauteController::class, 'etudiants']);
             Route::post('/etudiants', [CommunauteController::class, 'enregistrerEtudiant']);
+            Route::put('/etudiants/{etudiant}', [CommunauteController::class, 'modifierEtudiant']);
+            Route::post('/etudiants/{etudiant}/mot-de-passe', [CommunauteController::class, 'motDePasseEtudiant']);
+            Route::delete('/etudiants/{etudiant}', [CommunauteController::class, 'supprimerEtudiant']);
             Route::get('/enseignants', [CommunauteController::class, 'enseignants']);
             Route::post('/enseignants', [CommunauteController::class, 'enregistrerEnseignant']);
+            Route::put('/enseignants/{enseignant}', [CommunauteController::class, 'modifierEnseignant']);
+            Route::post('/enseignants/{enseignant}/mot-de-passe', [CommunauteController::class, 'motDePasseEnseignant']);
+            Route::delete('/enseignants/{enseignant}', [CommunauteController::class, 'supprimerEnseignant']);
             Route::get('/parents', [CommunauteController::class, 'parents']);
             Route::post('/parents/{parent}/decision', [CommunauteController::class, 'deciderParent']);
+            Route::put('/parents/{parent}', [CommunauteController::class, 'modifierParent']);
+            Route::post('/parents/{parent}/mot-de-passe', [CommunauteController::class, 'motDePasseParent']);
+            Route::delete('/parents/{parent}', [CommunauteController::class, 'supprimerParent']);
             Route::get('/inscriptions', [CommunauteController::class, 'inscriptions']);
             Route::post('/inscriptions', [CommunauteController::class, 'enregistrerInscription']);
 
@@ -85,6 +103,11 @@ Route::middleware('auth:sanctum')->group(function () {
             Route::post('/fiches/{fiche}/decision', [PaiementController::class, 'decider']);
             Route::get('/finances', [PaiementController::class, 'finances']);
             Route::get('/journal', [SuiviController::class, 'journal']);
+            Route::post('/plannings', [PlanningCompositionController::class, 'store']);
+            Route::delete('/plannings/{planning}', [PlanningCompositionController::class, 'destroy']);
+            Route::post('/emploi-du-temps', [EmploiController::class, 'store']);
+            Route::put('/emploi-du-temps/{seance}', [EmploiController::class, 'update']);
+            Route::delete('/emploi-du-temps/{seance}', [EmploiController::class, 'destroy']);
         });
     });
 });

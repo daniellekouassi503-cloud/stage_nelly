@@ -16,9 +16,18 @@ http.interceptors.request.use((config) => {
 export function messageErreur(erreur) {
   const data = erreur?.response?.data
   if (data?.errors) {
-    return Object.values(data.errors).flat().join(' ')
+    const textes = Object.values(data.errors).flat().filter(Boolean)
+    if (textes.length) {
+      const brut = textes.join(' ')
+      if (brut === 'validation.unique' || brut.startsWith('validation.')) {
+        return 'Cette information est déjà utilisée (souvent l’e-mail). Choisissez une autre valeur ou connectez-vous.'
+      }
+      return brut
+    }
   }
-  return data?.message || 'Une erreur est survenue. Réessayez.'
+  const message = data?.message
+  if (message && !String(message).startsWith('validation.')) return message
+  return 'Une erreur est survenue. Réessayez.'
 }
 
 export function fcfa(montant) {

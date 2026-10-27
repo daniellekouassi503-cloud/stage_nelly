@@ -30,15 +30,21 @@ class EvaluationController extends Controller
         if ($utilisateur->role === 'enseignant') {
             $query->where('code_enseignant', $utilisateur->enseignant?->code_enseignant);
         } elseif ($utilisateur->role === 'etudiant') {
-            $query->where('statut_publication', 'publiee')
-                ->whereIn('code_classe', $this->classesDe($utilisateur->etudiant?->matricule));
+            $query->whereIn('code_classe', $this->classesDe($utilisateur->etudiant?->matricule));
         } elseif ($utilisateur->role === 'parent') {
             $matricules = $this->acces->matriculesVisibles($utilisateur);
             $classes = Inscription::query()->whereIn('matricule', $matricules)->pluck('code_classe');
-            $query->where('statut_publication', 'publiee')->whereIn('code_classe', $classes);
+            $query->whereIn('code_classe', $classes);
         }
 
-        return response()->json(['donnees' => $query->orderByDesc('date_evaluation')->get()]);
+        $pourEleve = in_array($utilisateur->role, ['etudiant', 'parent'], true);
+        $lignes = $query->orderBy('date_evaluation', $pourEleve ? 'asc' : 'desc')->get();
+
+        return response()->json([
+            'donnees' => $pourEleve
+                ? $lignes->map(fn (Evaluation $evaluation) => $this->presenterProgramme($evaluation))->values()
+                : $lignes,
+        ]);
     }
 
     public function store(Request $request): JsonResponse
@@ -55,7 +61,9 @@ class EvaluationController extends Controller
 
         $code = $donnees['code_enseignant'] ?? $request->user()->enseignant?->code_enseignant;
         if (! $code) {
-            throw new AuthorizationException('Un enseignant affecté est requis.');
+            throw new AuthorizationException(
+                'Choisissez l’enseignant de cette matière, ou affectez-le d’abord dans Personnes → Affectations.'
+            );
         }
 
         if ($request->user()->role === 'enseignant' && $code !== $request->user()->enseignant?->code_enseignant) {
@@ -210,5 +218,20 @@ class EvaluationController extends Controller
         }
 
         return Inscription::query()->where('matricule', $matricule)->pluck('code_classe');
+    }
+
+    private function presenterProgramme(Evaluation $evaluation): array
+    {
+        return [
+            'num_evaluation' => $evaluation->num_evaluation,
+            'type_evaluation' => $evaluation->type_evaluation,
+            'date_evaluation' => optional($evaluation->date_evaluation)->toDateString(),
+            'semestre' => $evaluation->semestre,
+            'statut_affichage' => $evaluation->estPubliee() ? 'notes_publiees' : 'programme',
+            'matiere' => $evaluation->matiere?->libelle_matiere,
+            'classe' => $evaluation->classe?->libelle_classe,
+            'enseignant' => $evaluation->enseignant?->utilisateur?->nomComplet(),
+            'code_annee' => $evaluation->code_annee,
+        ];
     }
 }

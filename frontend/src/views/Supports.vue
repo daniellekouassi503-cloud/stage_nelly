@@ -1,17 +1,16 @@
 ﻿<template>
   <div>
-    <h3 class="page-title mb-3">Supports de cours</h3>
     <p v-if="erreur" class="etat-erreur">{{ erreur }}</p>
     <p v-if="message" class="text-success">{{ message }}</p>
     <div v-if="peutDeposer" class="card mb-3"><div class="card-body">
-      <form class="row g-2" @submit.prevent="deposer">
-        <div class="col-md-4"><input v-model="form.titre" class="form-control" placeholder="Titre" required /></div>
-        <div class="col-md-4"><input v-model="form.description" class="form-control" placeholder="Description" /></div>
-        <div class="col-md-4"><input type="file" class="form-control" required @change="choisir" /></div>
-        <div class="col-md-3"><select v-model="form.code_matiere" class="form-select" required><option value="">Matière</option><option v-for="a in matieres" :key="a" :value="a">{{ a }}</option></select></div>
-        <div class="col-md-3"><select v-model="form.code_filiere" class="form-select" required><option value="">Filière</option><option v-for="a in filieres" :key="a" :value="a">{{ a }}</option></select></div>
-        <div class="col-md-3"><select v-model="form.code_niveau" class="form-select" required><option value="">Niveau</option><option v-for="a in niveaux" :key="a" :value="a">{{ a }}</option></select></div>
-        <div class="col-md-3"><button class="btn btn-primary w-100">Publier</button></div>
+      <form class="row g-3" @submit.prevent="deposer">
+        <div class="col-md-4"><label class="form-label">Titre</label><input v-model="form.titre" class="form-control" required /></div>
+        <div class="col-md-4"><label class="form-label">Description</label><input v-model="form.description" class="form-control" /></div>
+        <div class="col-md-4"><label class="form-label">Fichier</label><input type="file" class="form-control" required @change="choisir" /></div>
+        <div class="col-md-3"><label class="form-label">Matière</label><select v-model="form.code_matiere" class="form-select" required><option value="">Choisir</option><option v-for="a in matieres" :key="a" :value="a">{{ a }}</option></select></div>
+        <div class="col-md-3"><label class="form-label">Filière</label><select v-model="form.code_filiere" class="form-select" required><option value="">Choisir</option><option v-for="a in filieres" :key="a" :value="a">{{ a }}</option></select></div>
+        <div class="col-md-3"><label class="form-label">Niveau</label><select v-model="form.code_niveau" class="form-select" required><option value="">Choisir</option><option v-for="a in niveaux" :key="a" :value="a">{{ a }}</option></select></div>
+        <div class="col-md-3 d-flex align-items-end"><button class="btn btn-primary w-100" :disabled="envoi">Publier</button></div>
       </form>
     </div></div>
     <div class="card"><div class="card-body">
@@ -43,6 +42,7 @@ const affectations = ref([])
 const erreur = ref('')
 const message = ref('')
 const chargement = ref(true)
+const envoi = ref(false)
 const fichier = ref(null)
 const form = reactive({ titre: '', description: '', code_matiere: '', code_filiere: '', code_niveau: '' })
 const peutDeposer = computed(() => ['enseignant', 'administrateur'].includes(session.role))
@@ -70,12 +70,15 @@ async function deposer() {
   const charge = new FormData()
   Object.entries(form).forEach(([cle, valeur]) => charge.append(cle, valeur))
   charge.append('fichier', fichier.value)
+  envoi.value = true
   try {
     await http.post('/api/supports', charge)
     message.value = 'Support publié. Les étudiants concernés sont notifiés.'
     await charger()
   } catch (e) {
     erreur.value = messageErreur(e)
+  } finally {
+    envoi.value = false
   }
 }
 async function telechargerSupport(support) {

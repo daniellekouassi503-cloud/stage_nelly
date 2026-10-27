@@ -1,0 +1,273 @@
+/* Ajustements EPCCI sur le gabarit — uniquement avec body.page-accueil-eduan */
+body.page-accueil-eduan {
+  --clr-theme-primary-6: #5f060d;
+  overflow-x: hidden;
+}
+
+body.page-accueil-eduan .logo-epcci {
+  display: block;
+  height: 48px;
+  width: auto;
+  max-width: 200px;
+  object-fit: contain;
+}
+
+/* Barre de navigation : logo | liens | actions, une seule ligne */
+body.page-accueil-eduan .h7_header-area {
+  background: #fff;
+  border-bottom: 1px solid #e8e8e8;
+}
+
+body.page-accueil-eduan .epcci-nav-bar {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 1.5rem;
+  min-height: 72px;
+  padding: 0.5rem 0;
+}
+
+body.page-accueil-eduan .h7_header-logo {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+}
+
+body.page-accueil-eduan .epcci-nav-liens {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  min-width: 0;
+}
+
+body.page-accueil-eduan .epcci-nav-liens ul {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 0.1rem 1.25rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+body.page-accueil-eduan .epcci-nav-liens ul li {
+  display: block;
+  margin: 0 !important;
+  white-space: nowrap;
+}
+
+body.page-accueil-eduan .epcci-nav-liens ul li a {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.35rem 0;
+  font-size: 0.95rem;
+  font-weight: 500;
+  line-height: 1.2;
+  color: #2c2c2c;
+  text-decoration: none;
+}
+
+body.page-accueil-eduan .epcci-nav-liens ul li a:hover,
+body.page-accueil-eduan .epcci-nav-liens ul li a.router-link-active {
+  color: #5f060d;
+}
+
+body.page-accueil-eduan .epcci-nav-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.65rem;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+body.page-accueil-eduan .epcci-nav-actions .h7_header-btn {
+  height: 42px;
+  padding: 0 1.25rem;
+  font-size: 0.92rem;
+  white-space: nowrap;
+  align-items: center;
+}
+
+body.page-accueil-eduan .epcci-nav-actions .header-menu-bar-icon {
+  font-size: 1.35rem;
+  color: #5f060d;
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+/* Bandeau contact : alignement horizontal propre */
+body.page-accueil-eduan .h7_header-top .row {
+  align-items: center;
+  min-height: 40px;
+}
+
+body.page-accueil-eduan .h7_header-top-list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.25rem 0;
+  margin: 0;
+  padding: 0.35rem 0;
+}
+
+body.page-accueil-eduan .h7_header-top-social ul {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  margin: 0;
+  padding: 0.35rem 0;
+}
+
+body.page-accueil-eduan .h7_header-top-social ul li span {
+  color: #fff;
+  font-size: 0.85rem;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+body.page-accueil-eduan .logo-epcci-footer {
+  height: 56px;
+  background: #fff;
+  padding: 0.35rem 0.5rem;
+  border-radius: 4px;
+}
+
+body.page-accueil-eduan .theme-btn-6,
+body.page-accueil-eduan .theme-btn-7,
+body.page-accueil-eduan .h7_header-btn {
+  background-color: #5f060d !important;
+  border-color: #5f060d !important;
+}
+
+body.page-accueil-eduan .theme-btn-7-yellow {
+  background-color: #fff !important;
+  color: #5f060d !important;
+  border-color: #fff !important;
+}
+
+body.page-accueil-eduan .h7_single-banner.epcci-banner {
+  background-size: cover;
+  background-position: center;
+  transition: background-image 0.45s ease;
+}
+
+body.page-accueil-eduan .epcci-rentree {
+  color: #fff;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+body.page-accueil-eduan .h7_banner-content-title {
+  font-size: clamp(2rem, 5vw, 4.2rem);
+}
+
+body.page-accueil-eduan .epcci-diapo-nav {
+  position: absolute;
+  right: 1.5rem;
+  bottom: 1.5rem;
+  gap: 0.5rem;
+  z-index: 2;
+}
+
+body.page-accueil-eduan .epcci-diapo-nav button {
+  width: 44px;
+  height: 44px;
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  background: rgba(15, 23, 42, 0.35);
+  color: #fff;
+  border-radius: 999px;
+}
+
+body.page-accueil-eduan .h7_program-item-title {
+  text-transform: none;
+}
+
+body.page-accueil-eduan .epcci-devise-liste {
+  list-style: none;
+  padding: 0;
+  margin: 1rem 0 0;
+}
+
+body.page-accueil-eduan .epcci-devise-liste li {
+  padding: 0.35rem 0;
+  font-size: 1.05rem;
+}
+
+body.page-accueil-eduan .epcci-intro-formations {
+  color: #64748b;
+  max-width: 40rem;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+body.page-accueil-eduan .epcci-qualite {
+  background: #f7f1f2;
+}
+
+body.page-accueil-eduan .epcci-iso {
+  max-width: 140px;
+  height: auto;
+}
+
+body.page-accueil-eduan .epcci-actu-carte {
+  display: block;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  overflow: hidden;
+  text-decoration: none;
+  color: #0f172a;
+  height: calc(100% - 1.5rem);
+  transition: border-color 0.16s ease;
+}
+
+body.page-accueil-eduan .epcci-actu-carte:hover {
+  border-color: #5f060d;
+}
+
+body.page-accueil-eduan .epcci-actu-carte img {
+  width: 100%;
+  height: 180px;
+  object-fit: cover;
+  display: block;
+}
+
+body.page-accueil-eduan .epcci-actu-corps {
+  padding: 1rem 1.1rem 1.2rem;
+}
+
+body.page-accueil-eduan .epcci-actu-corps h5 {
+  font-size: 1rem;
+  margin: 0 0 0.5rem;
+  line-height: 1.35;
+}
+
+body.page-accueil-eduan .epcci-actu-corps span {
+  color: #5f060d;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+body.page-accueil-eduan .h6_footer-area a {
+  text-decoration: none;
+}
+
+body.page-accueil-eduan .menu-accueil-mobile a {
+  display: block;
+  padding: 0.75rem 0;
+  color: #0f172a;
+  text-decoration: none;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.page-accueil-eduan .h7_single-banner.epcci-banner {
+    transition: none;
+  }
+}

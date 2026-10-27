@@ -1,18 +1,20 @@
 <template>
   <div>
-    <h3 class="page-title mb-3">Résultats publiés</h3>
     <div class="card mb-3"><div class="card-body">
       <form class="row g-2" @submit.prevent="charger">
         <div v-if="session.role === 'parent'" class="col-md-4">
+          <label class="form-label">Enfant</label>
           <select v-model="matricule" class="form-select" required>
             <option value="">Enfant</option>
             <option v-for="enfant in session.utilisateur?.enfants ?? []" :key="enfant.matricule" :value="enfant.matricule">{{ enfant.nom_complet }} · {{ enfant.matricule }}</option>
           </select>
         </div>
         <div v-else-if="session.role !== 'etudiant'" class="col-md-4">
-          <input v-model="matricule" class="form-control" placeholder="Matricule" required />
+          <label class="form-label">Matricule</label>
+          <input v-model="matricule" class="form-control" required />
         </div>
         <div class="col-md-3">
+          <label class="form-label">Période</label>
           <select v-model="semestre" class="form-select">
             <option value="">Année entière</option>
             <option value="1">Semestre 1</option>
@@ -49,8 +51,8 @@
       <div v-if="session.role === 'etudiant'" class="mt-3">
         <h6>Signaler une erreur</h6>
         <div class="row g-2">
-          <div class="col-md-4"><select v-model="signalement.num" class="form-select"><option value="">Évaluation</option><option v-for="ev in evaluationsPubliees" :key="ev.num_evaluation" :value="ev.num_evaluation">{{ ev.libelle }}</option></select></div>
-          <div class="col-md-5"><input v-model="signalement.motif" class="form-control" placeholder="Motif" /></div>
+          <div class="col-md-4"><label class="form-label">Évaluation</label><select v-model="signalement.num" class="form-select"><option value="">Choisir</option><option v-for="ev in evaluationsPubliees" :key="ev.num_evaluation" :value="ev.num_evaluation">{{ ev.libelle }}</option></select></div>
+          <div class="col-md-5"><label class="form-label">Motif</label><input v-model="signalement.motif" class="form-control" /></div>
           <div class="col-md-3"><button class="btn btn-outline-primary" type="button" @click="signaler">Envoyer</button></div>
         </div>
       </div>
@@ -114,7 +116,7 @@ async function signaler() {
 }
 onMounted(() => {
   if (session.role === 'parent' && !matricule.value) {
-    matricule.value = session.utilisateur?.enfants?.[0]?.matricule || ''
+    matricule.value = session.enfantActif?.matricule || session.utilisateur?.enfants?.[0]?.matricule || ''
   }
   if (matricule.value) charger()
 })

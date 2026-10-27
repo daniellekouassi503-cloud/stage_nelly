@@ -46,6 +46,14 @@ return [
             'report' => false,
         ],
 
+        'plannings' => [
+            'driver' => 'local',
+            'root' => storage_path('app/plannings'),
+            'serve' => false,
+            'throw' => true,
+            'report' => false,
+        ],
+
         'public' => [
             'driver' => 'local',
             'root' => storage_path('app/public'),

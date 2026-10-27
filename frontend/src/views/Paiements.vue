@@ -1,6 +1,5 @@
 <template>
   <div>
-    <h3 class="page-title mb-3">Vérification des paiements</h3>
     <p class="text-muted">Un paiement n’est validé qu’après votre décision. La simulation ne remplace pas la banque.</p>
     <p v-if="erreur" class="etat-erreur">{{ erreur }}</p>
     <p v-if="message" class="text-success">{{ message }}</p>
@@ -19,13 +18,15 @@
             <td>{{ f.numero_fiche }}</td>
             <td>{{ f.etudiant?.utilisateur?.nom_complet }}<br><small>{{ f.matricule }}</small></td>
             <td>{{ f.tranche?.libelle_tranche }} · {{ fcfa(f.tranche?.montant_tranche) }}</td>
-            <td>{{ f.statut_paiement }}</td>
+            <td><span class="badge-statut" :class="f.statut_paiement === 'valide' ? 'positif' : (f.statut_paiement === 'rejete' ? 'erreur' : 'ambre')">{{ libelleStatut(f.statut_paiement) }}</span></td>
             <td><span v-if="f.mode_justificatif === 'simulation'" class="pastille-simulation">Simulation</span><span v-else>{{ f.mode_justificatif }}</span></td>
             <td v-if="f.statut_paiement === 'en_attente_paiement'">
+              <label class="form-label">Date de paiement</label>
               <input v-model="f.date_paiement" type="date" class="form-control form-control-sm mb-1" />
-              <input v-model="f.motif_rejet" class="form-control form-control-sm mb-1" placeholder="Motif si rejet" />
-              <button class="btn btn-primary btn-sm" type="button" @click="decider(f, 'valide')">Valider</button>
-              <button class="btn btn-outline-danger btn-sm ms-1" type="button" @click="decider(f, 'rejete')">Rejeter</button>
+              <label class="form-label">Motif si rejet</label>
+              <input v-model="f.motif_rejet" class="form-control form-control-sm mb-1" />
+              <button class="btn btn-primary btn-sm" type="button" :disabled="envoi" @click="decider(f, 'valide')">Valider</button>
+              <button class="btn btn-outline-danger btn-sm ms-1" type="button" :disabled="envoi" @click="decider(f, 'rejete')">Rejeter</button>
             </td>
             <td v-else>{{ f.numero_recu || f.motif_rejet }}</td>
           </tr>
@@ -44,12 +45,22 @@ const finances = ref(null)
 const erreur = ref('')
 const message = ref('')
 
+const envoi = ref(false)
+
+function libelleStatut(statut) {
+  return { en_attente_paiement: 'En attente', valide: 'Validé', rejete: 'Rejeté' }[statut] || statut
+}
+
 async function charger() {
   const [f, fin] = await Promise.all([http.get('/api/fiches'), http.get('/api/finances')])
   fiches.value = f.data.donnees
   finances.value = fin.data.donnees
 }
+
 async function decider(fiche, decision) {
+  if (envoi.value) return
+  envoi.value = true
+  erreur.value = ''
   try {
     await http.post(`/api/fiches/${fiche.numero_fiche}/decision`, {
       decision,
@@ -60,6 +71,8 @@ async function decider(fiche, decision) {
     await charger()
   } catch (e) {
     erreur.value = messageErreur(e)
+  } finally {
+    envoi.value = false
   }
 }
 onMounted(charger)

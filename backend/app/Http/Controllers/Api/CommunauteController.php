@@ -132,6 +132,113 @@ class CommunauteController extends Controller
         ]);
     }
 
+    public function modifierEtudiant(Request $request, Etudiant $etudiant): JsonResponse
+    {
+        $donnees = $request->validate([
+            'nom' => ['required', 'string', 'max:100'],
+            'prenoms' => ['required', 'string', 'max:150'],
+            'email' => ['required', 'email', 'max:150'],
+            'telephone' => ['nullable', 'string', 'max:20'],
+            'nom_parent' => ['nullable', 'string', 'max:150'],
+            'telephone_parent' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $etudiant = $this->comptes->modifierEtudiant($request->user(), $etudiant, $donnees);
+
+        return response()->json([
+            'message' => 'Fiche étudiant mise à jour.',
+            'donnees' => $this->presenterEtudiant($etudiant->load(['utilisateur', 'inscriptions.classe', 'inscriptions.annee'])),
+        ]);
+    }
+
+    public function motDePasseEtudiant(Request $request, Etudiant $etudiant): JsonResponse
+    {
+        $donnees = $request->validate([
+            'mot_de_passe' => ['required', 'string', 'min:8'],
+        ]);
+        $etudiant->load('utilisateur');
+        $this->comptes->reinitialiserMotDePasse($request->user(), $etudiant->utilisateur, $donnees['mot_de_passe']);
+
+        return response()->json(['message' => 'Mot de passe étudiant réinitialisé.']);
+    }
+
+    public function modifierEnseignant(Request $request, Enseignant $enseignant): JsonResponse
+    {
+        $donnees = $request->validate([
+            'nom' => ['required', 'string', 'max:100'],
+            'prenoms' => ['required', 'string', 'max:150'],
+            'email' => ['required', 'email', 'max:150'],
+            'telephone' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $enseignant = $this->comptes->modifierEnseignant($request->user(), $enseignant, $donnees);
+
+        return response()->json([
+            'message' => 'Fiche enseignant mise à jour.',
+            'donnees' => $enseignant->load('utilisateur'),
+        ]);
+    }
+
+    public function motDePasseEnseignant(Request $request, Enseignant $enseignant): JsonResponse
+    {
+        $donnees = $request->validate([
+            'mot_de_passe' => ['required', 'string', 'min:8'],
+        ]);
+        $enseignant->load('utilisateur');
+        $this->comptes->reinitialiserMotDePasse($request->user(), $enseignant->utilisateur, $donnees['mot_de_passe']);
+
+        return response()->json(['message' => 'Mot de passe enseignant réinitialisé.']);
+    }
+
+    public function supprimerEnseignant(Request $request, Enseignant $enseignant): JsonResponse
+    {
+        $this->comptes->supprimerEnseignant($request->user(), $enseignant);
+
+        return response()->json(['message' => 'Compte enseignant supprimé.']);
+    }
+
+    public function modifierParent(Request $request, ParentTuteur $parent): JsonResponse
+    {
+        $donnees = $request->validate([
+            'nom' => ['required', 'string', 'max:100'],
+            'prenoms' => ['required', 'string', 'max:150'],
+            'email' => ['required', 'email', 'max:150'],
+            'telephone' => ['nullable', 'string', 'max:20'],
+        ]);
+
+        $parent = $this->comptes->modifierParent($request->user(), $parent, $donnees);
+
+        return response()->json([
+            'message' => 'Fiche parent mise à jour.',
+            'donnees' => $parent->utilisateur?->resume(),
+        ]);
+    }
+
+    public function motDePasseParent(Request $request, ParentTuteur $parent): JsonResponse
+    {
+        $donnees = $request->validate([
+            'mot_de_passe' => ['required', 'string', 'min:8'],
+        ]);
+        $parent->load('utilisateur');
+        $this->comptes->reinitialiserMotDePasse($request->user(), $parent->utilisateur, $donnees['mot_de_passe']);
+
+        return response()->json(['message' => 'Mot de passe parent réinitialisé.']);
+    }
+
+    public function supprimerEtudiant(Request $request, Etudiant $etudiant): JsonResponse
+    {
+        $this->comptes->supprimerEtudiant($request->user(), $etudiant);
+
+        return response()->json(['message' => 'Compte étudiant supprimé.']);
+    }
+
+    public function supprimerParent(Request $request, ParentTuteur $parent): JsonResponse
+    {
+        $this->comptes->supprimerParent($request->user(), $parent);
+
+        return response()->json(['message' => 'Compte parent supprimé.']);
+    }
+
     public function inscriptions(): JsonResponse
     {
         return response()->json([

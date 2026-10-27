@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="d-flex justify-content-between align-items-center mb-3">
-      <h3 class="page-title mb-0">Notifications</h3>
+      <p class="mb-0 text-muted">Messages reçus pour votre compte.</p>
       <button class="btn btn-outline-primary btn-sm" type="button" @click="toutLire">Tout marquer comme lu</button>
     </div>
     <p v-if="erreur" class="etat-erreur">{{ erreur }}</p>
@@ -9,7 +9,7 @@
       <p v-if="!notifications.length" class="etat-vide mb-0">Aucune notification.</p>
       <button v-for="n in notifications" :key="n.num_notification" class="list-group-item list-group-item-action w-100 text-start border-0 border-bottom" type="button" @click="lire(n)">
         <strong>{{ n.type_notification }}</strong>
-        <span v-if="n.statut_lecture === 'non_lue'" class="badge bg-primary ms-2">Non lue</span>
+        <span v-if="n.statut_lecture === 'non_lue'" class="badge-statut ambre">Non lue</span>
         <div>{{ n.message }}</div>
         <small class="text-muted">{{ n.date_envoi }}</small>
       </button>

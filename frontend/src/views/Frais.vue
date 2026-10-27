@@ -1,16 +1,16 @@
 <template>
   <div>
-    <h3 class="page-title mb-1">Frais de scolarité</h3>
     <p class="text-muted">Montants en FCFA. Le téléchargement d’une fiche ne signifie pas que la tranche est payée. Le paiement réel se fait à la banque. La simulation n’encaisse rien.</p>
     <div class="row g-2 mb-3" v-if="session.role === 'parent'">
       <div class="col-md-4">
+        <label class="form-label">Enfant</label>
         <select v-model="matricule" class="form-select" @change="charger">
           <option v-for="enfant in session.utilisateur?.enfants ?? []" :key="enfant.matricule" :value="enfant.matricule">{{ enfant.nom_complet }} · {{ enfant.matricule }}</option>
         </select>
       </div>
     </div>
     <div class="row g-2 mb-3" v-else-if="session.role !== 'etudiant'">
-      <div class="col-md-4"><input v-model="matricule" class="form-control" placeholder="Matricule" /></div>
+      <div class="col-md-4"><label class="form-label">Matricule</label><input v-model="matricule" class="form-control" /></div>
       <div class="col-md-2"><button class="btn btn-primary" type="button" @click="charger">Afficher</button></div>
     </div>
     <p v-if="erreur" class="etat-erreur">{{ erreur }}</p>
@@ -31,7 +31,7 @@
                 <td>{{ t.libelle_tranche }} <span v-if="t.simulation" class="pastille-simulation">Simulation</span></td>
                 <td>{{ fcfa(t.montant_tranche) }}</td>
                 <td>{{ t.date_limite }}</td>
-                <td>{{ libelleStatut(t.statut) }}</td>
+                <td><span class="badge-statut" :class="t.statut === 'valide' ? 'positif' : (t.statut === 'rejete' ? 'erreur' : 'ambre')">{{ libelleStatut(t.statut) }}</span></td>
                 <td class="text-end">
                   <button v-if="t.statut === 'non_demandee'" class="btn btn-primary btn-sm" type="button" @click="generer(t)">Générer la fiche</button>
                   <button v-if="t.numero_fiche" class="btn btn-outline-primary btn-sm ms-1" type="button" @click="pdf(t)">Fiche PDF</button>
@@ -103,7 +103,7 @@ async function simuler(tranche) {
 }
 onMounted(() => {
   if (session.role === 'parent' && !matricule.value) {
-    matricule.value = session.utilisateur?.enfants?.[0]?.matricule || ''
+    matricule.value = session.enfantActif?.matricule || session.utilisateur?.enfants?.[0]?.matricule || ''
   }
   if (session.role === 'etudiant' || session.role === 'parent') charger()
 })

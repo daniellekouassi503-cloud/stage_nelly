@@ -1,9 +1,9 @@
 <template>
   <AuthLayout>
-    <h4>Compte en attente</h4>
-    <p>Bonjour {{ session.utilisateur?.nom_complet }}. L’administration doit encore vérifier votre lien avec l’étudiant indiqué dans le dossier.</p>
-    <p class="text-muted">Tant que le compte n’est pas validé, les notes, les frais et les supports restent inaccessibles.</p>
-    <button class="btn btn-outline-primary" @click="sortir">Se déconnecter</button>
+    <h4>Compte indisponible</h4>
+    <p>Bonjour {{ session.utilisateur?.nom_complet }}. Ce compte parent n’est pas actif.</p>
+    <p class="text-muted">Créez un nouveau compte avec un matricule d’étudiant présent dans la base de l’établissement, ou contactez l’administration.</p>
+    <button class="btn btn-outline-primary" @click="sortir">Retour à l’accueil</button>
   </AuthLayout>
 </template>
 
@@ -16,6 +16,6 @@ const session = useSession()
 const router = useRouter()
 async function sortir() {
   await session.deconnecter()
-  router.push('/connexion')
+  router.push('/')
 }
 </script>

@@ -37,9 +37,10 @@ class DatabaseSeeder extends Seeder
             );
 
             $filieres = [
-                'IDA' => 'Informatique Développeur d\'Application',
-                'LT' => 'Logistique Transport',
-                'FC' => 'Finance Comptabilité',
+                'AD' => 'Assistanat de Direction',
+                'IDA' => 'Informatique – Développeur d\'Application',
+                'LT' => 'Logistique',
+                'FC' => 'Finances Comptabilité et Gestion d\'Entreprises',
                 'GC' => 'Gestion Commerciale',
                 'TH' => 'Tourisme et Hôtellerie',
             ];
@@ -95,7 +96,7 @@ class DatabaseSeeder extends Seeder
             $etudiantUser = $this->utilisateur('etudiant@plateforme.test', 'Konan', 'Aya', 'etudiant', '0100000003', $motDePasse);
             $etudiant2User = $this->utilisateur('etudiant2@plateforme.test', 'Diallo', 'Moussa', 'etudiant', '0100000004', $motDePasse);
             $parentUser = $this->utilisateur('parent@plateforme.test', 'Konan', 'Adjoua', 'parent', '0700000001', $motDePasse);
-            $parentAttente = $this->utilisateur('parent.attente@plateforme.test', 'Nguessan', 'Serge', 'parent', '0700000002', $motDePasse, 'en_attente');
+            $parent2 = $this->utilisateur('parent2@plateforme.test', 'Diallo', 'Fatou', 'parent', '0700000002', $motDePasse);
 
             Enseignant::query()->updateOrCreate(['code_enseignant' => 'ENS0001'], ['id_utilisateur' => $enseignantUser->id_utilisateur]);
             Etudiant::query()->updateOrCreate(['matricule' => 'ETU-2025-001'], [
@@ -105,20 +106,19 @@ class DatabaseSeeder extends Seeder
             ]);
             Etudiant::query()->updateOrCreate(['matricule' => 'ETU-2025-002'], [
                 'nom_parent' => 'Diallo Fatou',
-                'telephone_parent' => '0700000099',
+                'telephone_parent' => '0700000002',
                 'id_utilisateur' => $etudiant2User->id_utilisateur,
             ]);
             ParentTuteur::query()->updateOrCreate(['code_parent' => 'PAR0001'], ['id_utilisateur' => $parentUser->id_utilisateur]);
-            ParentTuteur::query()->updateOrCreate(['code_parent' => 'PAR0002'], ['id_utilisateur' => $parentAttente->id_utilisateur]);
+            ParentTuteur::query()->updateOrCreate(['code_parent' => 'PAR0002'], ['id_utilisateur' => $parent2->id_utilisateur]);
 
             DB::table('rattacher')->updateOrInsert(
                 ['code_parent' => 'PAR0001', 'matricule' => 'ETU-2025-001'],
                 ['lien_parente' => 'mère']
             );
-
-            DemandeRattachement::query()->updateOrCreate(
+            DB::table('rattacher')->updateOrInsert(
                 ['code_parent' => 'PAR0002', 'matricule' => 'ETU-2025-002'],
-                ['lien_parente' => 'père', 'statut' => 'en_attente', 'date_demande' => now()]
+                ['lien_parente' => 'mère']
             );
 
             foreach (['ETU-2025-001', 'ETU-2025-002'] as $matricule) {
@@ -212,6 +212,10 @@ class DatabaseSeeder extends Seeder
 
             unset($admin);
         });
+
+        $this->call(ClasseIda2aSeeder::class);
+        $this->call(ClassesFictivesSeeder::class);
+        $this->call(VieQuotidienneSeeder::class);
     }
 
     private function utilisateur(string $email, string $nom, string $prenoms, string $role, string $telephone, string $motDePasse, string $statut = 'valide'): Utilisateur
